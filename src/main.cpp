@@ -1,53 +1,13 @@
+#include "CanMessage.h"
+#include "CanTask.h"
 #include "CdChanger.h"
 #include "SteeringWheelButtons.h"
+#include "Task.h"
 #include "communication.h"
 #include "defines.h"
 #include "mcp_can.h"
 #include "mcp_can_dfs.h"
 #include <Arduino.h>
-
-class CanMessageSuccess {
-public:
-  CanMessageSuccess(unsigned long id, uint8_t data[8]) : id(id) {
-    for (int i = 0; i < 8; i++) {
-      this->data[i] = data[i];
-    }
-  }
-  unsigned long id;
-  uint8_t data[8];
-};
-
-class CanMessageFailure {
-public:
-  CanMessageFailure(unsigned long id) : id(id) {}
-  unsigned long id;
-};
-
-union CanMessage {
-  CanMessage(unsigned long id, uint8_t data[8]) : success(id, data) {}
-  CanMessage(unsigned long id) : failure(id) {}
-  CanMessageSuccess success;
-  CanMessageFailure failure;
-};
-
-class Task {
-public:
-  Task(void (*aFn)()) { fn = aFn; }
-  void run() { fn(); }
-
-private:
-  void (*fn)();
-};
-
-class CanTask {
-public:
-  CanTask(CAN_MESSAGE_ID_IN id, void (*aFn)(CanMessage message)) { fn = aFn; }
-  CAN_MESSAGE_ID_IN id;
-  void run(CanMessage message) { fn(message); }
-
-private:
-  void (*fn)(CanMessage message);
-};
 
 MCP_CAN CAN(CAN_CS_PIN);
 CdChanger CDC(CAN);
