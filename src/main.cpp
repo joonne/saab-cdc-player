@@ -18,10 +18,16 @@ CanMessage readCanBus() {
   unsigned long id;
 
   if (CAN.readMsgBuf(&id, &len, data) == CAN_OK) {
-    return CanMessage(id, data);
+    return CanMessage({
+        .type = "success",
+        .value = {.success = CanMessageSuccess(id, data)},
+    });
   }
 
-  return CanMessage(0);
+  return CanMessage({
+      .type = "failure",
+      .value = {.failure = CanMessageFailure()},
+  });
 }
 
 Task setupTasks[2] = {
@@ -44,7 +50,7 @@ CanTask canTasks[2] = {
     CanTask(CAN_MESSAGE_ID_IN::STEERING_WHEEL_BUTTONS,
             [](CanMessage message) {
               Serial.println("STEEERING_WHEEL_BUTTONS");
-              return SteeringWheelButtons::onFrame(message.success.data);
+              return SteeringWheelButtons::onFrame(message.value.success.data);
             }),
 };
 
@@ -52,8 +58,13 @@ Task loopTasks[2] = {
     Task([]() { CDC.heartbeat(); }),
     Task([]() {
       auto message = readCanBus();
+      if (strcmp(message.type, "failure") == 0) {
+        return;
+      }
+
       for (auto &task : canTasks) {
-        if (task.id == static_cast<CAN_MESSAGE_ID_IN>(message.success.id)) {
+        if (task.id ==
+            static_cast<CAN_MESSAGE_ID_IN>(message.value.success.id)) {
           task.run(message);
         }
       }
@@ -63,7 +74,7 @@ Task loopTasks[2] = {
 // we have tasks that
 // * run on setup
 // * run on loop
-// * run on can message
+// * run on every can message
 
 void setup() {
   for (auto &task : setupTasks) {

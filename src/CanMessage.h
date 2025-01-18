@@ -16,15 +16,15 @@ public:
 
 class CanMessageFailure {
 public:
-  CanMessageFailure(unsigned long id) : id(id) {}
-  unsigned long id;
+  CanMessageFailure() {}
 };
 
-union CanMessage {
-  CanMessage(unsigned long id, uint8_t data[8]) : success(id, data) {}
-  CanMessage(unsigned long id) : failure(id) {}
-  CanMessageSuccess success;
-  CanMessageFailure failure;
+struct CanMessage {
+  const char *type;
+  union {
+    CanMessageSuccess success;
+    CanMessageFailure failure;
+  } value;
 };
 
 #endif // CAN_MESSAGE_H

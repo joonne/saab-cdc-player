@@ -7,7 +7,7 @@ SteeringWheelButtons::decode(const unsigned char &data) {
   case 0x59: // NXT
     return STEERING_WHEEL_BUTTON::NXT;
   default:
-    Serial.println("Unknown button: " + String(data));
+    Serial.println("UNKNOWN BUTTON: " + String(data));
   }
   return STEERING_WHEEL_BUTTON::NONE;
 }
