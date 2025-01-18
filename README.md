@@ -45,7 +45,20 @@ platformio.ini - Project Configuration File
 
 ## Arduino Nano => Raspi connections
 
+- USB / Serial
+
 ## HifiBerry => CDC connector connections
+
+- R+ => pin 7 R+
+- R- => pin 2 R-
+- RGND => raspi GND
+- L+ => pin 8 L+
+- L- => pin 3 L-
+- LGND => raspi GND
+
+## Networking
+
+Currently connects to a hotspot provided by mobile phone
 
 ## Operating System
 
