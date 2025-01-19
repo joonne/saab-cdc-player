@@ -25,6 +25,8 @@ struct CanMessage {
     CanMessageSuccess success;
     CanMessageFailure failure;
   } value;
+
+  bool isFailure() { return strcmp(this->type, "failure") == 0; }
 };
 
 #endif // CAN_MESSAGE_H

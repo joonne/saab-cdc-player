@@ -10,14 +10,13 @@
 #include <Arduino.h>
 
 MCP_CAN CAN(CAN_CS_PIN);
-CdChanger CDC(CAN);
 
-CanMessage readCanBus() {
+CanMessage readCanBus(MCP_CAN can) {
   uint8_t len;
   uint8_t data[8];
   unsigned long id;
 
-  if (CAN.readMsgBuf(&id, &len, data) == CAN_OK) {
+  if (can.readMsgBuf(&id, &len, data) == CAN_OK) {
     return CanMessage({
         .type = "success",
         .value = {.success = CanMessageSuccess(id, data)},
@@ -45,7 +44,7 @@ CanTask canTasks[2] = {
     CanTask(CAN_MESSAGE_ID_IN::CDC_HANDSHAKE_REQUEST,
             [](CanMessage message) {
               Serial.println("CDC_HANDSHAKE_REQUEST");
-              return CDC.handshake();
+              return CdChanger::handshake(CAN);
             }),
     CanTask(CAN_MESSAGE_ID_IN::STEERING_WHEEL_BUTTONS,
             [](CanMessage message) {
@@ -55,10 +54,11 @@ CanTask canTasks[2] = {
 };
 
 Task loopTasks[2] = {
-    Task([]() { CDC.heartbeat(); }),
+    Task([]() { CdChanger::heartbeat(CAN); }),
     Task([]() {
-      auto message = readCanBus();
-      if (strcmp(message.type, "failure") == 0) {
+      auto message = readCanBus(CAN);
+
+      if (message.isFailure()) {
         return;
       }
 

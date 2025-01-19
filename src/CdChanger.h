@@ -5,12 +5,8 @@
 
 class CdChanger {
 public:
-  CdChanger(MCP_CAN can);
-  void handshake();
-  void heartbeat();
-
-private:
-  MCP_CAN _can;
+  static void handshake(MCP_CAN can);
+  static void heartbeat(MCP_CAN can);
 };
 
 #endif // "CD_CHANGER_H"
