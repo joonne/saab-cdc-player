@@ -16,17 +16,30 @@ CanMessage readCanBus(MCP_CAN can) {
   uint8_t data[8];
   unsigned long id;
 
-  if (can.readMsgBuf(&id, &len, data) == CAN_OK) {
-    return CanMessage({
-        .type = "success",
-        .value = {.success = CanMessageSuccess(id, data)},
-    });
+  if (CAN.checkReceive() == CAN_NOMSG) {
+    CanMessage empty = {
+        .status = CAN_MESSAGE_STATUS::NO_MESSAGE,
+        .value = {.failure = CanMessageFailure()},
+    };
+
+    return empty;
   }
 
-  return CanMessage({
-      .type = "failure",
+  if (can.readMsgBuf(&id, &len, data) == CAN_OK) {
+    CanMessage success = {
+        .status = CAN_MESSAGE_STATUS::SUCCESS,
+        .value = {.success = CanMessageSuccess(id, data)},
+    };
+
+    return success;
+  }
+
+  CanMessage failure = {
+      .status = CAN_MESSAGE_STATUS::FAILURE,
       .value = {.failure = CanMessageFailure()},
-  });
+  };
+
+  return failure;
 }
 
 Task setupTasks[2] = {
@@ -58,7 +71,7 @@ Task loopTasks[2] = {
     Task([]() {
       auto message = readCanBus(CAN);
 
-      if (message.isFailure()) {
+      if (message.isEmpty() || message.isFailure()) {
         return;
       }
 

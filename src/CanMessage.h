@@ -19,14 +19,22 @@ public:
   CanMessageFailure() {}
 };
 
+enum class CAN_MESSAGE_STATUS {
+  FAILURE,
+  SUCCESS,
+  NO_MESSAGE,
+};
+
 struct CanMessage {
-  const char *type;
+  const CAN_MESSAGE_STATUS status;
   union {
     CanMessageSuccess success;
     CanMessageFailure failure;
   } value;
 
-  bool isFailure() { return strcmp(this->type, "failure") == 0; }
+  bool isFailure() { return status == CAN_MESSAGE_STATUS::FAILURE; }
+  bool isSuccess() { return status == CAN_MESSAGE_STATUS::SUCCESS; }
+  bool isEmpty() { return status == CAN_MESSAGE_STATUS::NO_MESSAGE; }
 };
 
 #endif // CAN_MESSAGE_H
